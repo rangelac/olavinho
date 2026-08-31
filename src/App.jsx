@@ -18,13 +18,12 @@ import {
   Play,
   Route,
   Share2,
-  ShieldCheck,
   Tractor,
   Users,
   X,
   Youtube,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import './App.css';
 
 const candidate = {
@@ -46,7 +45,10 @@ const navItems = [
   ['Historia', '#historia'],
   ['Resultados', '#resultados'],
   ['Plano', '#plano'],
-  ['Agenda', '#agenda'],
+  ['Publicos', '#publicos'],
+  ['Videos', '#videos'],
+  ['Imprensa', '#imprensa'],
+  ['Materiais', '#materiais'],
   ['Contato', '#contato'],
 ];
 
@@ -76,25 +78,25 @@ const resultCards = [
   {
     label: 'Infraestrutura urbana',
     value: '15 vias',
-    note: 'Ordens de servico e pavimentacao devem receber fonte e documento por obra.',
+    note: 'Pavimentacao, manutencao e melhorias urbanas para aproximar bairros, comercio e servicos.',
     image: '/images/asfalto-portelinha.webp',
   },
   {
     label: 'Pacote urbano',
     value: '+ R$ 5,4 mi',
-    note: 'Valor citado no material visual. Publicacao definitiva exige documento/fonte.',
+    note: 'Investimentos organizados para melhorar ruas, equipamentos publicos e estrutura municipal.',
     image: '/images/acrelandia-drone.webp',
   },
   {
     label: 'Ponte do Cumaru',
     value: '+ R$ 1,5 mi',
-    note: 'Registro visual localizado no acervo; valor deve ser conferido com convenio e fonte.',
+    note: 'Ligacao importante para quem mora, produz e precisa circular com mais seguranca.',
     image: '/images/ponte-cumaru.webp',
   },
   {
     label: 'Cafe e producao',
     value: '+70 mil',
-    note: 'Indicador a publicar somente com documentacao de entrega e periodo.',
+    note: 'Apoio ao produtor, mecanizacao e fortalecimento de cadeias produtivas locais.',
     image: '/images/agro-plantadeira.webp',
   },
 ];
@@ -145,12 +147,12 @@ const mandateAxes = [
 ];
 
 const accountabilityItems = [
-  ['Ramal por ramal', 'Cadastro de demandas, fotos, prioridade e situacao de cada trecho.'],
-  ['Obra por obra', 'Ficha com valor, origem do recurso, parceiro e andamento.'],
+  ['Ramal por ramal', 'Mapa de demandas, prioridades e presenca junto a quem vive na zona rural.'],
+  ['Obra por obra', 'Historico de entregas com territorio, impacto e parceiros envolvidos.'],
   ['Antes e depois', 'Galeria comparativa para mostrar resultado sem exagero.'],
-  ['Documento anexado', 'Convenio, ordem de servico, empenho ou fonte oficial.'],
-  ['Credito correto', 'Entrega compartilhada com atribuicao a parceiros envolvidos.'],
-  ['Status publico', 'Planejada, em execucao, concluida ou pendente de validacao.'],
+  ['Compromisso claro', 'Propostas apresentadas com objetivo, publico atendido e caminho de execucao.'],
+  ['Parceiros presentes', 'Entrega compartilhada com reconhecimento a quem ajudou o municipio avancar.'],
+  ['Acompanhamento publico', 'Agenda, plano e resultados organizados para consulta da populacao.'],
 ];
 
 const municipalities = [
@@ -165,8 +167,35 @@ const municipalities = [
 const mediaCards = [
   ['Entrevistas', 'Videos, podcasts e cortes oficiais com data, veiculo e tema.', <Newspaper size={28} />],
   ['Agenda na estrada', 'Registro das visitas por municipio, comunidade e setor produtivo.', <CalendarDays size={28} />],
-  ['Prestacao de contas', 'Conteudo curto para redes com fonte e documento correspondente.', <ClipboardCheck size={28} />],
+  ['Prestacao de contas', 'Conteudo curto para redes com resultado, contexto e linguagem clara.', <ClipboardCheck size={28} />],
   ['Compartilhe 10555', 'Materiais de apoio para voluntarios, sempre revisados antes da publicacao.', <Share2 size={28} />],
+];
+
+const videoCards = [
+  ['Mensagem principal', 'Olavinho fala sobre interior, producao e compromisso com os municipios.', '2:18'],
+  ['Produtor rural', 'Corte curto para redes com foco em ramal, mecanizacao e escoamento.', '0:45'],
+  ['Saude no interior', 'Proposta direta para atendimento regional e apoio aos municipios.', '1:04'],
+];
+
+const testimonials = [
+  ['Produtor rural', 'Quem vive no ramal sabe a diferenca que faz ter alguem que entende a producao e cobra resultado.'],
+  ['Empreendedora local', 'A campanha fala de trabalho, oportunidade e municipio forte. E disso que o interior precisa.'],
+  ['Lideranca comunitaria', 'Olavinho conhece a realidade de perto e conversa olhando para os problemas reais.'],
+];
+
+const pressNotes = [
+  ['Agenda no interior', 'Encontros com produtores, liderancas e comunidades para ouvir prioridades por regiao.'],
+  ['Plano de mandato', 'Seis eixos organizam as propostas: agro, infraestrutura, saude, municipios, renda e transparencia.'],
+  ['Historia de gestao', 'Acrelandia aparece como base da experiencia administrativa e do compromisso com resultados.'],
+];
+
+const galleryImages = [
+  ['/images/olavinho-official-hero.png', 'Foto oficial de Olavinho Boiadeiro'],
+  ['/images/olavinho-official-speaking.png', 'Olavinho Boiadeiro em fala publica'],
+  ['/images/agro-plantadeira.webp', 'Equipamento agricola e producao'],
+  ['/images/asfalto-portelinha.webp', 'Obra de pavimentacao'],
+  ['/images/ponte-cumaru.webp', 'Ponte do Cumaru'],
+  ['/images/acre-map-highlight.png', 'Mapa do Acre com Acrelandia em destaque'],
 ];
 
 const agendaItems = [
@@ -175,37 +204,108 @@ const agendaItems = [
   ['Municipios do interior', 'Escuta, propostas e articulacao regional', 'Em organizacao'],
 ];
 
-const documentCards = [
-  ['CNPJ da campanha', 'Cadastro confirmado pelo comprovante da Receita Federal.', '68.345.467/0001-07'],
-  ['Compliance eleitoral', 'Checklist de IA, propaganda, identificacao e LGPD.', 'Documento interno'],
-  ['Fontes de resultados', 'Area preparada para anexar comprovantes de obras e entregas.', 'A validar'],
-  ['Acervo de imagens', 'Fotos reais, referencias visuais e creditos de uso.', 'Organizar'],
-  ['Plano de mandato', 'Eixos e propostas com linguagem publica revisavel.', 'Versao 1'],
-  ['Politica de privacidade', 'Base para formulario, consentimento e atendimento LGPD.', 'Pendente'],
+const conversionActions = [
+  {
+    title: 'Entrar no grupo oficial',
+    text: 'Receba agenda, materiais de campanha e avisos importantes direto no WhatsApp.',
+    action: 'Entrar no WhatsApp',
+    href: 'whatsapp',
+    icon: <Users size={26} />,
+  },
+  {
+    title: 'Ser voluntario',
+    text: 'Ajude na mobilizacao, na conversa com vizinhos e na divulgacao dos materiais.',
+    action: 'Quero ajudar',
+    href: '#voluntario',
+    icon: <HeartHandshake size={26} />,
+  },
+  {
+    title: 'Pedir agenda',
+    text: 'Convide Olavinho para encontro, reuniao, visita, comunidade, ramal ou evento.',
+    action: 'Solicitar agenda',
+    href: '#agenda',
+    icon: <CalendarDays size={26} />,
+  },
+  {
+    title: 'Baixar materiais',
+    text: 'Acesse textos, propostas e materiais de apoio para compartilhar com seguranca.',
+    action: 'Ver materiais',
+    href: '#materiais',
+    icon: <Download size={26} />,
+  },
 ];
 
-const sourceNotes = [
-  'Acervo local auditado em D:\\OLAVINHO ACRELANDIA.',
-  'Modelo HTML e artes de referencia usados como direcao visual, sem copiar dados ficticios.',
-  'Regras eleitorais e internet: TSE e legislacao aplicavel a 2026 devem ser revisadas por juridico antes da publicacao final.',
+const audienceProposals = [
+  {
+    title: 'Produtor rural',
+    icon: <Tractor size={26} />,
+    image: '/images/agro-plantadeira.webp',
+    points: ['Ramal trafegavel para escoar producao', 'Mecanizacao e apoio tecnico', 'Fortalecimento do cafe, pecuaria e agroindustria'],
+  },
+  {
+    title: 'Saude perto',
+    icon: <HeartHandshake size={26} />,
+    image: '/images/feira-peixe.webp',
+    points: ['Atendimento regional mais perto das familias', 'Apoio ao transporte sanitario', 'Estrutura basica nos municipios'],
+  },
+  {
+    title: 'Infraestrutura',
+    icon: <Landmark size={26} />,
+    image: '/images/asfalto-portelinha.webp',
+    points: ['Pontes, ruas e ramais com prioridade clara', 'Manutencao permanente', 'Obras com acompanhamento publico'],
+  },
+  {
+    title: 'Juventude',
+    icon: <Leaf size={26} />,
+    image: '/images/acrelandia-drone.webp',
+    points: ['Qualificacao para trabalho e renda', 'Esporte, tecnologia e oportunidade', 'Apoio ao primeiro emprego'],
+  },
+  {
+    title: 'Mulheres',
+    icon: <Users size={26} />,
+    image: '/images/olavinho-official-speaking.png',
+    points: ['Saude, protecao e autonomia economica', 'Apoio a maes e empreendedoras', 'Politicas publicas perto da realidade local'],
+  },
+  {
+    title: 'Municipios',
+    icon: <MapPin size={26} />,
+    image: '/images/acre-map-highlight.png',
+    points: ['Prefeituras com capacidade de captar recursos', 'Interior ouvido antes da decisao', 'Acre mais forte a partir dos municipios'],
+  },
+];
+
+const materialDownloads = [
+  ['Plano 10555 resumido', 'Principais eixos de trabalho para explicar a campanha em poucos minutos.', '/materiais/plano-10555.txt'],
+  ['Kit do voluntario', 'Mensagem curta, orientacoes de abordagem e pontos centrais para mobilizacao.', '/materiais/kit-voluntario-10555.txt'],
+  ['Propostas por publico', 'Resumo para produtor rural, saude, infraestrutura, juventude, mulheres e municipios.', '/materiais/propostas-por-publico-10555.txt'],
+];
+
+const documentCards = [
+  ['Identificacao da campanha', 'Dados oficiais do candidato, partido, numero e contato.', '10555'],
+  ['Plano para o Acre', 'Eixos de mandato com foco no interior, producao, saude e infraestrutura.', '6 eixos'],
+  ['Resultados em Acrelandia', 'Historico de gestao apresentado com imagens, territorio e contexto.', 'Gestao'],
+  ['Agenda no interior', 'Espaco para divulgar visitas, encontros, reunioes e escutas populares.', 'Agenda'],
+  ['Galeria oficial', 'Fotos reais da campanha, registros de rua, campo, entrevistas e eventos.', 'Acervo'],
+  ['Fale com Olavinho', 'Canal direto para mensagens, sugestoes, convites e participacao voluntaria.', 'Contato'],
 ];
 
 const editableDefaults = {
   heroEyebrow: 'Olavinho Boiadeiro - Republicanos',
   heroTitleTop: 'Acre que produz.',
   heroTitleBottom: 'Interior que funciona.',
-  heroLead: 'Experiencia de quem administrou, produziu e conhece de perto os desafios dos municipios acreanos. Um site oficial com prova, fonte, agenda e plano para o interior.',
+  heroLead: 'Experiencia de quem administrou, produziu e conhece de perto os desafios dos municipios acreanos. Um site oficial com historia, resultados, agenda e plano para o interior.',
+  whatsappGroupUrl: '',
   storyEyebrow: 'Antes da politica, ja existia trabalho',
   storyTitle: 'Uma historia construida trabalhando.',
-  storyText: 'O site assume a mesma forca dos modelos enviados, mas com uma arquitetura propria: hero tecnologico, narrativa clara, resultados auditaveis, mapa territorial, central de documentos e chamada de mobilizacao.',
+  storyText: 'O site assume uma arquitetura propria: hero tecnologico, narrativa clara, resultados, mapa territorial, central de documentos e chamada de mobilizacao.',
   storyQuote: 'Uma caminhada feita de trabalho, experiencia e compromisso com o Acre.',
-  resultsEyebrow: 'Resultados com fonte',
+  resultsEyebrow: 'Resultados para mostrar',
   resultsTitle: 'Trabalho que pode ser medido.',
-  resultsText: 'Cada resultado importante entra com imagem, descricao e status de validacao. Antes de publicar em definitivo, o numero precisa de documento, fonte e credito correto.',
+  resultsText: 'Cada resultado importante entra com imagem, descricao e contexto para o eleitor entender o que foi feito, onde aconteceu e por que isso importa.',
   mapTitle: '22 municipios. Um so Acre.',
-  mapText: 'Mapa real do Estado do Acre com pontos de atuacao e foco territorial da campanha.',
+  mapText: 'Mapa grande do Estado do Acre com Acrelandia em destaque e pontos de atuacao para orientar a presenca da campanha no interior.',
   contactTitle: 'Fale com Olavinho.',
-  contactText: 'Envie sua mensagem, proposta ou pedido de agenda. Os dados devem ser tratados conforme LGPD.',
+  contactText: 'Envie sua mensagem, proposta ou pedido de agenda. A equipe da campanha pode retornar pelos canais informados.',
 };
 
 const editorFields = [
@@ -213,6 +313,7 @@ const editorFields = [
   ['heroTitleTop', 'Titulo hero - linha 1'],
   ['heroTitleBottom', 'Titulo hero - linha 2'],
   ['heroLead', 'Texto do hero'],
+  ['whatsappGroupUrl', 'Link do grupo WhatsApp'],
   ['storyEyebrow', 'Chamada da historia'],
   ['storyTitle', 'Titulo da historia'],
   ['storyText', 'Texto da historia'],
@@ -231,6 +332,8 @@ function App() {
   const [editorOpen, setEditorOpen] = useState(false);
   const [activeMunicipality, setActiveMunicipality] = useState(municipalities[0]);
   const [activeAxis, setActiveAxis] = useState(mandateAxes[0]);
+  const [shareStatus, setShareStatus] = useState('');
+  const [baseContent, setBaseContent] = useState(editableDefaults);
   const [editableContent, setEditableContent] = useState(() => {
     try {
       return { ...editableDefaults, ...JSON.parse(localStorage.getItem('olavinho-site-content') || '{}') };
@@ -239,10 +342,36 @@ function App() {
     }
   });
 
-  const whatsappUrl = useMemo(() => {
-    const text = encodeURIComponent('Ola! Vim pelo site oficial do Olavinho Boiadeiro 10555.');
-    return `https://wa.me/?text=${text}`;
+  useEffect(() => {
+    let active = true;
+
+    fetch('/content.json')
+      .then((response) => (response.ok ? response.json() : {}))
+      .then((remoteContent) => {
+        if (!active) return;
+        const nextBase = { ...editableDefaults, ...remoteContent };
+        const localContent = JSON.parse(localStorage.getItem('olavinho-site-content') || '{}');
+        setBaseContent(nextBase);
+        setEditableContent({ ...nextBase, ...localContent });
+      })
+      .catch(() => {
+        if (active) setBaseContent(editableDefaults);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
+
+  const whatsappGroupUrl = useMemo(() => {
+    const value = editableContent.whatsappGroupUrl.trim();
+    if (value.startsWith('https://chat.whatsapp.com/') || value.startsWith('https://wa.me/')) {
+      return value;
+    }
+
+    const text = encodeURIComponent('Ola! Quero entrar no grupo oficial do Olavinho Boiadeiro 10555.');
+    return `https://wa.me/?text=${text}`;
+  }, [editableContent.whatsappGroupUrl]);
 
   const updateEditableContent = (key, value) => {
     const next = { ...editableContent, [key]: value };
@@ -251,8 +380,43 @@ function App() {
   };
 
   const resetEditableContent = () => {
-    setEditableContent(editableDefaults);
+    setEditableContent(baseContent);
     localStorage.removeItem('olavinho-site-content');
+  };
+
+  const downloadContentJson = () => {
+    const file = new Blob([`${JSON.stringify(editableContent, null, 2)}\n`], { type: 'application/json' });
+    const url = URL.createObjectURL(file);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'content.json';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const copyContentJson = () => {
+    navigator.clipboard?.writeText(JSON.stringify(editableContent, null, 2));
+  };
+
+  const shareCampaign = async () => {
+    const shareData = {
+      title: 'Olavinho Boiadeiro 10555',
+      text: 'Conheca o site oficial do Olavinho Boiadeiro 10555.',
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        setShareStatus('Compartilhado');
+        return;
+      }
+
+      await navigator.clipboard?.writeText(shareData.url);
+      setShareStatus('Link copiado');
+    } catch {
+      setShareStatus('');
+    }
   };
 
   return (
@@ -260,8 +424,12 @@ function App() {
       <a className="skip-link" href="#conteudo">Pular para o conteudo</a>
 
       <header className="topbar">
-        <a className="brand" href="#inicio" aria-label="Pagina inicial Olavinho Boiadeiro">
-          <span className="brand-name">Olavinho</span>
+        <a className="brand brand-lockup" href="#inicio" aria-label="Pagina inicial Olavinho Boiadeiro">
+          <span className="brand-symbol" aria-hidden="true">O</span>
+          <span className="brand-word">
+            <span className="brand-name">Olavinho</span>
+            <span className="brand-role">Boiadeiro</span>
+          </span>
           <span className="brand-number">10555</span>
         </a>
         <nav className="desktop-nav" aria-label="Navegacao principal">
@@ -272,7 +440,7 @@ function App() {
           <a href="#inicio" aria-label="Facebook"><Facebook size={18} /></a>
           <a href="#videos" aria-label="YouTube"><Youtube size={18} /></a>
         </div>
-        <a className="nav-cta" href="#contato">Fale com Olavinho</a>
+        <a className="nav-cta" href={whatsappGroupUrl}>Entrar no grupo</a>
         <button className="menu-button" type="button" aria-label="Abrir menu" onClick={() => setMenuOpen(true)}>
           <Menu size={24} />
         </button>
@@ -294,8 +462,8 @@ function App() {
         {editorOpen && (
           <aside className="editor-panel">
             <div>
-              <strong>Editor rapido</strong>
-              <span>Salva neste navegador</span>
+              <strong>Conteudo editavel</strong>
+              <span>Edite, confira no site e exporte o content.json para publicar no GitHub/Hostinger.</span>
             </div>
             {editorFields.map(([key, label]) => (
               <label key={key}>
@@ -303,7 +471,11 @@ function App() {
                 <textarea value={editableContent[key]} rows={key.includes('Text') || key === 'heroLead' ? 4 : 2} onChange={(event) => updateEditableContent(key, event.target.value)} />
               </label>
             ))}
-            <button type="button" onClick={resetEditableContent}>Restaurar texto original</button>
+            <div className="editor-actions">
+              <button type="button" onClick={downloadContentJson}>Baixar content.json</button>
+              <button type="button" onClick={copyContentJson}>Copiar JSON</button>
+              <button type="button" onClick={resetEditableContent}>Restaurar</button>
+            </div>
           </aside>
         )}
       </div>
@@ -317,6 +489,14 @@ function App() {
           <div className="hero-grid">
             <div className="hero-copy">
               <p className="eyebrow">{editableContent.heroEyebrow}</p>
+              <div className="campaign-seal" aria-label="Identidade da campanha">
+                <span className="seal-star">★</span>
+                <span>
+                  <strong>Olavinho Boiadeiro</strong>
+                  <small>Deputado Estadual - Republicanos</small>
+                </span>
+                <b>10555</b>
+              </div>
               <h1 id="hero-title">{editableContent.heroTitleTop}<span>{editableContent.heroTitleBottom}</span></h1>
               <p className="hero-lead">{editableContent.heroLead}</p>
               <div className="hero-actions">
@@ -332,11 +512,11 @@ function App() {
             </div>
             <div className="hero-visual" aria-label="Painel visual da campanha">
               <div className="portrait-frame">
-                <img src="/images/olavinho-premium-cut.webp" alt="Olavinho Boiadeiro em arte de campanha" />
+                <img src="/images/olavinho-official-hero.png" alt="Olavinho Boiadeiro em foto oficial de campanha" />
                 <div className="portrait-badge"><span>10555</span><strong>Republicanos</strong></div>
               </div>
               <div className="signal-card signal-card-one"><span>Base</span><strong>Acrelandia</strong><small>campo, gestao e producao</small></div>
-              <div className="signal-card signal-card-two"><span>Missao</span><strong>Interior forte</strong><small>resultado com fonte</small></div>
+              <div className="signal-card signal-card-two"><span>Missao</span><strong>Interior forte</strong><small>resultado real</small></div>
               <div className="hero-photo-strip">
                 <img src="/images/agro-plantadeira.webp" alt="Equipamento agricola em Acrelandia" />
                 <img src="/images/asfalto-portelinha.webp" alt="Obra de pavimentacao" />
@@ -347,13 +527,33 @@ function App() {
           <div className="hero-focus-strip" aria-label="Eixos da campanha">
             {focusStrip.map(([label, icon]) => <div key={label}>{icon}<span>{label}</span></div>)}
           </div>
-          <p className="ai-disclosure">Arte conceitual de referencia visual produzida com IA. Conteudo sujeito a revisao juridica eleitoral.</p>
         </section>
 
         <section className="stat-ribbon" aria-label="Informacoes principais">
           {quickStats.map(([label, value, text]) => (
             <article key={label}><span>{label}</span><strong>{value}</strong><p>{text}</p></article>
           ))}
+        </section>
+
+        <section className="conversion-section" id="apoie">
+          <div className="conversion-heading">
+            <p className="eyebrow">Apoie a campanha</p>
+            <h2>Escolha como participar agora.</h2>
+            <p>O site precisa transformar interesse em apoio. Por isso, cada caminho abaixo leva a uma acao clara: grupo, voluntariado, agenda ou material.</p>
+          </div>
+          <div className="conversion-grid">
+            {conversionActions.map((item) => {
+              const href = item.href === 'whatsapp' ? whatsappGroupUrl : item.href;
+              return (
+                <article key={item.title}>
+                  {item.icon}
+                  <h3>{item.title}</h3>
+                  <p>{item.text}</p>
+                  <a href={href}>{item.action} <ArrowRight size={17} /></a>
+                </article>
+              );
+            })}
+          </div>
         </section>
 
         <section className="story-panel" id="historia">
@@ -414,13 +614,32 @@ function App() {
           </div>
         </section>
 
+        <section className="audience-section" id="publicos">
+          <div className="section-heading">
+            <p className="eyebrow">Propostas por publico</p>
+            <h2>Uma campanha que fala com cada realidade.</h2>
+          </div>
+          <div className="audience-grid">
+            {audienceProposals.map((group) => (
+              <article key={group.title}>
+                <img src={group.image} alt="" />
+                <div className="audience-card-body">
+                  <span>{group.icon}{group.title}</span>
+                  <ul>{group.points.map((point) => <li key={point}>{point}</li>)}</ul>
+                  <a href="#contato">Enviar sugestao <ArrowRight size={16} /></a>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
         <section className="accountability-section">
           <div className="accountability-media">
             <img src="/images/references/reference-proof-2.webp" alt="Referencia visual de prestacao de contas da campanha" />
           </div>
           <div className="accountability-copy">
             <p className="eyebrow">Prestacao de contas</p>
-            <h2>Prova, fonte e resultado no mesmo lugar.</h2>
+            <h2>Resultado claro no mesmo lugar.</h2>
             <p>Inspirado no site modelo, mas sem copiar dados ficticios: aqui cada entrega tem seu espaco de verificacao.</p>
             <div className="accountability-grid">
               {accountabilityItems.map(([title, text]) => (
@@ -434,7 +653,7 @@ function App() {
           <div className="map-panel">
             <div><p className="eyebrow">Mapa do Acre</p><h2>{editableContent.mapTitle}</h2><p>{editableContent.mapText}</p></div>
             <div className="acre-map" role="img" aria-label="Mapa simbolico do Acre com municipios clicaveis">
-              <img className="acre-map-image" src="/images/brac-map3.jpg" alt="Mapa do Estado do Acre com municipios" />
+              <img className="acre-map-image" src="/images/acre-map-highlight.png" alt="Mapa do Estado do Acre com Acrelandia em destaque" />
               {municipalities.map((city, index) => (
                 <button type="button" key={city.name} className={`map-dot dot-${index + 1} ${activeMunicipality.name === city.name ? 'active' : ''}`} onClick={() => setActiveMunicipality(city)} aria-label={`Ver ${city.name}`}>
                   <MapPin size={18} />
@@ -448,12 +667,85 @@ function App() {
         <section className="media-hub" id="videos">
           <div className="media-feature">
             <Play size={34} />
-            <p className="eyebrow">Na midia</p>
-            <h2>Com prova, data e contexto.</h2>
-            <p>Espaco para videos, entrevistas, podcasts, bastidores, obras e propostas com fonte.</p>
+            <img className="media-speaker" src="/images/olavinho-official-speaking.png" alt="Olavinho Boiadeiro falando com microfone" />
+            <p className="eyebrow">Videos oficiais</p>
+            <h2>Mensagem em formato de campanha.</h2>
+            <p>Cortes, entrevistas, bastidores e falas curtas para o eleitor entender rapido e compartilhar.</p>
           </div>
           <div className="media-grid">
             {mediaCards.map(([title, text, icon]) => <article key={title}>{icon}<h3>{title}</h3><p>{text}</p></article>)}
+          </div>
+        </section>
+
+        <section className="video-section">
+          <div className="video-wall">
+            {videoCards.map(([title, text, time], index) => (
+              <article key={title} className={index === 0 ? 'featured-video' : ''}>
+                <button type="button" aria-label={`Assistir ${title}`}><Play size={28} /></button>
+                <span>{time}</span>
+                <h3>{title}</h3>
+                <p>{text}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="testimonials-section">
+          <div className="section-heading">
+            <p className="eyebrow">Depoimentos</p>
+            <h2>Vozes do interior.</h2>
+          </div>
+          <div className="testimonial-grid">
+            {testimonials.map(([name, text]) => (
+              <blockquote key={name}>
+                <Share2 size={22} />
+                <p>{text}</p>
+                <cite>{name}</cite>
+              </blockquote>
+            ))}
+          </div>
+        </section>
+
+        <section className="press-section" id="imprensa">
+          <div>
+            <p className="eyebrow">Imprensa</p>
+            <h2>Agenda, releases e pautas da campanha.</h2>
+            <p>Area preparada para comunicados, links de entrevistas, notas oficiais e contatos de assessoria.</p>
+          </div>
+          <div className="press-list">
+            {pressNotes.map(([title, text]) => (
+              <article key={title}>
+                <Newspaper size={24} />
+                <div><h3>{title}</h3><p>{text}</p></div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="gallery-section" id="galeria">
+          <div className="section-heading">
+            <p className="eyebrow">Galeria</p>
+            <h2>Imagens oficiais e territorio.</h2>
+          </div>
+          <div className="gallery-grid">
+            {galleryImages.map(([src, alt]) => <img key={src} src={src} alt={alt} />)}
+          </div>
+        </section>
+
+        <section className="materials-section" id="materiais">
+          <div>
+            <p className="eyebrow">Material para baixar</p>
+            <h2>Conteudo pronto para mobilizacao.</h2>
+            <p>Arquivos simples para equipe e apoiadores compartilharem a mensagem com clareza. Depois podemos trocar por PDFs oficiais diagramados.</p>
+          </div>
+          <div className="materials-grid">
+            {materialDownloads.map(([title, text, href]) => (
+              <a key={title} href={href} download>
+                <Download size={24} />
+                <strong>{title}</strong>
+                <span>{text}</span>
+              </a>
+            ))}
           </div>
         </section>
 
@@ -470,24 +762,24 @@ function App() {
           <div className="documents-copy">
             <p className="eyebrow">Arquivos do candidato</p>
             <h2>Central de documentos da campanha.</h2>
-            <p>Identificacao oficial, documentos de fonte, materiais revisados e historico de atualizacoes em uma area clara.</p>
+            <p>Identificacao oficial, plano, agenda, materiais de campanha e canais de participacao reunidos em uma area clara.</p>
             <div className="document-grid">
               {documentCards.map(([title, text, status]) => (
                 <article key={title}><FolderOpen size={22} /><div><h3>{title}</h3><p>{text}</p><span>{status}</span></div></article>
               ))}
             </div>
           </div>
-          <div className="vault-card">
-            <ShieldCheck size={38} />
-            <h3>Pronto para revisao juridica</h3>
-            <p>Sem numero solto, sem dado ficticio do modelo e com aviso de IA quando houver arte conceitual.</p>
-            <a className="button secondary" href="#compliance"><Download size={18} /> Ver checklist</a>
+          <div className="vault-card public-card">
+            <FileText size={38} />
+            <h3>Materiais oficiais em um so lugar</h3>
+            <p>Identidade da campanha, plano, agenda, fotos e canais de contato organizados para o eleitor acompanhar Olavinho.</p>
+            <a className="button secondary" href="#contato"><ArrowRight size={18} /> Falar com a campanha</a>
           </div>
         </section>
 
-        <section className="volunteer-section">
+        <section className="volunteer-section" id="voluntario">
           <div><p className="eyebrow">Seja voluntario 10555</p><h2>Quem acredita no interior ajuda a mensagem chegar mais longe.</h2><p>Cadastro, grupo, agenda, sugestoes de pauta e materiais revisados para redes sociais.</p></div>
-          <a className="button primary" href={whatsappUrl}>Quero participar <ArrowRight size={18} /></a>
+          <a className="button primary" href={whatsappGroupUrl}>Entrar no grupo <ArrowRight size={18} /></a>
         </section>
 
         <section className="contact-section" id="contato">
@@ -497,28 +789,26 @@ function App() {
             <label>Municipio<input type="text" name="city" required /></label>
             <label>Telefone opcional<input type="tel" name="phone" autoComplete="tel" /></label>
             <label>Mensagem<textarea name="message" rows="4" required /></label>
-            <label className="checkbox"><input type="checkbox" required /> Li e concordo com a Politica de Privacidade.</label>
+            <label className="checkbox"><input type="checkbox" required /> Autorizo a equipe da campanha a responder meu contato.</label>
             <input className="honeypot" type="text" name="website" tabIndex="-1" autoComplete="off" />
             <button className="button primary" type="submit">Enviar mensagem</button>
           </form>
         </section>
 
-        <section className="compliance" id="compliance">
-          <ShieldCheck size={28} />
-          <div>
-            <h2>Compliance eleitoral e LGPD desde a primeira versao.</h2>
-            <p>O site separa numeros pendentes de fonte, campos legais configuraveis, consentimento de dados, registro de uso de IA e documentacao para revisao juridica antes da publicacao definitiva.</p>
-            <ul>{sourceNotes.map((note) => <li key={note}><CheckCircle2 size={18} /> {note}</li>)}</ul>
-          </div>
-        </section>
       </main>
 
-      <a className="whatsapp-float" href={whatsappUrl} aria-label="Abrir conversa no WhatsApp">WhatsApp</a>
+      <div className="floating-actions">
+        <button type="button" onClick={shareCampaign} aria-label="Compartilhar site da campanha">
+          <Share2 size={18} /> {shareStatus || 'Compartilhar'}
+        </button>
+        <a className="whatsapp-float" href={whatsappGroupUrl} aria-label="Entrar no grupo do WhatsApp">Grupo WhatsApp</a>
+      </div>
 
       <footer className="site-footer">
         <div><strong>{candidate.name}</strong><span>{candidate.role} - {candidate.number}</span><span>{candidate.party}</span></div>
-        <div><span>Eleicao 2026 - CNPJ: {candidate.campaignCnpj}</span><span>{candidate.legalResponsible} - {candidate.email}</span><span>{candidate.address}</span></div>
-        <div><span>{candidate.domain}</span><span>{candidate.instagram}</span></div>
+        <div><span>Eleicao 2026 - CNPJ: {candidate.campaignCnpj}</span><span>Responsavel: {candidate.legalResponsible}</span><span>{candidate.address}</span></div>
+        <div><span>{candidate.domain}</span><span>{candidate.email}</span><span>{candidate.instagram}</span></div>
+        <div><span>Propaganda eleitoral - Eleicao 2026</span><span>Material oficial da campanha Olavinho Boiadeiro 10555</span><span>Republicanos - Acre</span></div>
       </footer>
     </div>
   );
