@@ -1,16 +1,42 @@
-# React + Vite
+# Olavinho Boiadeiro 10555
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Site oficial da campanha de Olavinho Boiadeiro para Deputado Estadual do Acre.
 
-Currently, two official plugins are available:
+Identificacao eleitoral inicial:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- CNPJ: `68.345.467/0001-07`
+- Nome empresarial: `ELEICAO 2026 OLAVO FRANCELINO DE REZENDE DEPUTADO ESTADUAL`
+- E-mail: `olavinhoboiadeiro@gmail.com`
 
-## React Compiler
+## Desenvolvimento
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm install
+npm run dev
+```
 
-## Expanding the ESLint configuration
+## Build
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm run build
+```
+
+A pasta final para hospedagem estatica e `dist`.
+
+## Hostinger
+
+- Repositorio: `rangelac/olavinho`
+- Branch: `main`
+- Build command: `npm run build`
+- Output folder: `dist`
+
+## Conteudo
+
+Os numeros de resultados devem ser tratados como preliminares enquanto nao houver fonte/documento anexado. Ver `docs/COMPLIANCE-ELEITORAL.md`.
+
+## Estrutura
+
+- `src/App.jsx`: pagina principal e secoes.
+- `src/App.css`: design system visual.
+- `public/images`: imagens otimizadas do acervo.
+- `docs`: compliance, design e deploy.
