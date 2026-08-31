@@ -155,15 +155,6 @@ const accountabilityItems = [
   ['Acompanhamento publico', 'Agenda, plano e resultados organizados para consulta da populacao.'],
 ];
 
-const municipalities = [
-  { name: 'Acrelandia', theme: 'Producao, infraestrutura e gestao municipal como prova de experiencia.' },
-  { name: 'Rio Branco', theme: 'Conexao institucional, saude regional e geracao de oportunidade.' },
-  { name: 'Placido de Castro', theme: 'Fronteira produtiva, comercio e ramais com manutencao permanente.' },
-  { name: 'Sena Madureira', theme: 'Integracao territorial, agricultura familiar e presenca do Estado.' },
-  { name: 'Cruzeiro do Sul', theme: 'Regionalizacao da saude, educacao e economia do Jurua.' },
-  { name: 'Brasileia', theme: 'Infraestrutura, comercio de fronteira e seguranca para produzir.' },
-];
-
 const mediaCards = [
   ['Entrevistas', 'Videos, podcasts e cortes oficiais com data, veiculo e tema.', <Newspaper size={28} />],
   ['Agenda na estrada', 'Registro das visitas por municipio, comunidade e setor produtivo.', <CalendarDays size={28} />],
@@ -327,10 +318,23 @@ const editorFields = [
   ['contactText', 'Texto do contato'],
 ];
 
+const editorSecurity = {
+  salt: 'olavinho-editor-v1',
+  userHash: 'd0abccee1c05351f0aa69bc51be6e5e077b9372845528f6795479c11f8ac32fb',
+  passHash: 'fa7b0ebc9039f2afe1026dd61c4bf818e6f5feed2d1e8c4ba24ab32e8e7a39ac',
+  sessionKey: 'olavinho-editor-authenticated',
+  lockKey: 'olavinho-editor-lock-until',
+  maxAttempts: 5,
+  lockMinutes: 5,
+};
+
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
-  const [activeMunicipality, setActiveMunicipality] = useState(municipalities[0]);
+  const [editorUnlocked, setEditorUnlocked] = useState(() => sessionStorage.getItem(editorSecurity.sessionKey) === 'true');
+  const [editorCredentials, setEditorCredentials] = useState({ user: '', password: '' });
+  const [editorError, setEditorError] = useState('');
+  const [failedAttempts, setFailedAttempts] = useState(0);
   const [activeAxis, setActiveAxis] = useState(mandateAxes[0]);
   const [shareStatus, setShareStatus] = useState('');
   const [baseContent, setBaseContent] = useState(editableDefaults);
@@ -398,6 +402,48 @@ function App() {
     navigator.clipboard?.writeText(JSON.stringify(editableContent, null, 2));
   };
 
+  const hashEditorValue = async (value) => {
+    const bytes = new TextEncoder().encode(`${editorSecurity.salt}${value}`);
+    const digest = await crypto.subtle.digest('SHA-256', bytes);
+    return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, '0')).join('');
+  };
+
+  const handleEditorLogin = async (event) => {
+    event.preventDefault();
+    const lockUntil = Number(localStorage.getItem(editorSecurity.lockKey) || 0);
+
+    if (lockUntil > Date.now()) {
+      const minutes = Math.ceil((lockUntil - Date.now()) / 60000);
+      setEditorError(`Acesso bloqueado por ${minutes} min.`);
+      return;
+    }
+
+    const [userHash, passHash] = await Promise.all([
+      hashEditorValue(editorCredentials.user.trim()),
+      hashEditorValue(editorCredentials.password),
+    ]);
+
+    if (userHash === editorSecurity.userHash && passHash === editorSecurity.passHash) {
+      setEditorUnlocked(true);
+      setEditorError('');
+      setFailedAttempts(0);
+      setEditorCredentials({ user: '', password: '' });
+      sessionStorage.setItem(editorSecurity.sessionKey, 'true');
+      localStorage.removeItem(editorSecurity.lockKey);
+      return;
+    }
+
+    const nextAttempts = failedAttempts + 1;
+    setFailedAttempts(nextAttempts);
+    setEditorError('Usuario ou senha incorretos.');
+
+    if (nextAttempts >= editorSecurity.maxAttempts) {
+      localStorage.setItem(editorSecurity.lockKey, String(Date.now() + editorSecurity.lockMinutes * 60000));
+      setFailedAttempts(0);
+      setEditorError(`Muitas tentativas. Tente novamente em ${editorSecurity.lockMinutes} min.`);
+    }
+  };
+
   const shareCampaign = async () => {
     const shareData = {
       title: 'Olavinho Boiadeiro 10555',
@@ -425,12 +471,7 @@ function App() {
 
       <header className="topbar">
         <a className="brand brand-lockup" href="#inicio" aria-label="Pagina inicial Olavinho Boiadeiro">
-          <span className="brand-symbol" aria-hidden="true">O</span>
-          <span className="brand-word">
-            <span className="brand-name">Olavinho</span>
-            <span className="brand-role">Boiadeiro</span>
-          </span>
-          <span className="brand-number">10555</span>
+          <img src="/images/olavinho-logo-principal.png" alt="Olavinho Boiadeiro Deputado Estadual" />
         </a>
         <nav className="desktop-nav" aria-label="Navegacao principal">
           {navItems.map(([item, href]) => <a key={item} href={href}>{item}</a>)}
@@ -461,21 +502,52 @@ function App() {
         </button>
         {editorOpen && (
           <aside className="editor-panel">
-            <div>
-              <strong>Conteudo editavel</strong>
-              <span>Edite, confira no site e exporte o content.json para publicar no GitHub/Hostinger.</span>
-            </div>
-            {editorFields.map(([key, label]) => (
-              <label key={key}>
-                {label}
-                <textarea value={editableContent[key]} rows={key.includes('Text') || key === 'heroLead' ? 4 : 2} onChange={(event) => updateEditableContent(key, event.target.value)} />
-              </label>
-            ))}
-            <div className="editor-actions">
-              <button type="button" onClick={downloadContentJson}>Baixar content.json</button>
-              <button type="button" onClick={copyContentJson}>Copiar JSON</button>
-              <button type="button" onClick={resetEditableContent}>Restaurar</button>
-            </div>
+            {!editorUnlocked ? (
+              <form className="editor-login" onSubmit={handleEditorLogin}>
+                <div>
+                  <strong>Acesso restrito</strong>
+                  <span>Entre para liberar o editor do site.</span>
+                </div>
+                <label>
+                  Usuario
+                  <input
+                    type="text"
+                    value={editorCredentials.user}
+                    autoComplete="off"
+                    onChange={(event) => setEditorCredentials({ ...editorCredentials, user: event.target.value })}
+                  />
+                </label>
+                <label>
+                  Senha
+                  <input
+                    type="password"
+                    value={editorCredentials.password}
+                    autoComplete="current-password"
+                    onChange={(event) => setEditorCredentials({ ...editorCredentials, password: event.target.value })}
+                  />
+                </label>
+                {editorError && <p className="editor-error">{editorError}</p>}
+                <button type="submit">Entrar no editor</button>
+              </form>
+            ) : (
+              <>
+                <div>
+                  <strong>Conteudo editavel</strong>
+                  <span>Edite, confira no site e exporte o content.json para publicar no GitHub/Hostinger.</span>
+                </div>
+                {editorFields.map(([key, label]) => (
+                  <label key={key}>
+                    {label}
+                    <textarea value={editableContent[key]} rows={key.includes('Text') || key === 'heroLead' ? 4 : 2} onChange={(event) => updateEditableContent(key, event.target.value)} />
+                  </label>
+                ))}
+                <div className="editor-actions">
+                  <button type="button" onClick={downloadContentJson}>Baixar content.json</button>
+                  <button type="button" onClick={copyContentJson}>Copiar JSON</button>
+                  <button type="button" onClick={resetEditableContent}>Restaurar</button>
+                </div>
+              </>
+            )}
           </aside>
         )}
       </div>
@@ -489,14 +561,6 @@ function App() {
           <div className="hero-grid">
             <div className="hero-copy">
               <p className="eyebrow">{editableContent.heroEyebrow}</p>
-              <div className="campaign-seal" aria-label="Identidade da campanha">
-                <span className="seal-star">★</span>
-                <span>
-                  <strong>Olavinho Boiadeiro</strong>
-                  <small>Deputado Estadual - Republicanos</small>
-                </span>
-                <b>10555</b>
-              </div>
               <h1 id="hero-title">{editableContent.heroTitleTop}<span>{editableContent.heroTitleBottom}</span></h1>
               <p className="hero-lead">{editableContent.heroLead}</p>
               <div className="hero-actions">
@@ -504,8 +568,7 @@ function App() {
                 <a className="button secondary" href="#plano">Ver plano 10555</a>
               </div>
               <div className="hero-identity" aria-label={`${candidate.name}, ${candidate.role}, numero ${candidate.number}`}>
-                <strong>Olavinho <em>Boiadeiro</em></strong>
-                <span>Deputado Estadual</span>
+                <img src="/images/olavinho-logo-principal.png" alt="Olavinho Boiadeiro Deputado Estadual" />
                 <b>{candidate.number}</b>
                 <small>{candidate.party}</small>
               </div>
@@ -651,17 +714,11 @@ function App() {
 
         <section className="map-section" id="mapa">
           <div className="map-panel">
-            <div><p className="eyebrow">Mapa do Acre</p><h2>{editableContent.mapTitle}</h2><p>{editableContent.mapText}</p></div>
-            <div className="acre-map" role="img" aria-label="Mapa simbolico do Acre com municipios clicaveis">
+            <div className="map-copy"><p className="eyebrow">Mapa do Acre</p><h2>{editableContent.mapTitle}</h2><p>{editableContent.mapText}</p></div>
+            <div className="acre-map" role="img" aria-label="Mapa do Estado do Acre com Acrelandia em destaque">
               <img className="acre-map-image" src="/images/acre-map-highlight.png" alt="Mapa do Estado do Acre com Acrelandia em destaque" />
-              {municipalities.map((city, index) => (
-                <button type="button" key={city.name} className={`map-dot dot-${index + 1} ${activeMunicipality.name === city.name ? 'active' : ''}`} onClick={() => setActiveMunicipality(city)} aria-label={`Ver ${city.name}`}>
-                  <MapPin size={18} />
-                </button>
-              ))}
             </div>
           </div>
-          <aside className="municipality-card"><span>Territorio em foco</span><h3>{activeMunicipality.name}</h3><p>{activeMunicipality.theme}</p></aside>
         </section>
 
         <section className="media-hub" id="videos">
@@ -770,7 +827,7 @@ function App() {
             </div>
           </div>
           <div className="vault-card public-card">
-            <FileText size={38} />
+            <img className="secondary-logo-card" src="/images/olavinho-logo-secundaria.png" alt="Olavinho Boiadeiro 10555" />
             <h3>Materiais oficiais em um so lugar</h3>
             <p>Identidade da campanha, plano, agenda, fotos e canais de contato organizados para o eleitor acompanhar Olavinho.</p>
             <a className="button secondary" href="#contato"><ArrowRight size={18} /> Falar com a campanha</a>
@@ -805,7 +862,7 @@ function App() {
       </div>
 
       <footer className="site-footer">
-        <div><strong>{candidate.name}</strong><span>{candidate.role} - {candidate.number}</span><span>{candidate.party}</span></div>
+        <div><img className="footer-logo" src="/images/olavinho-logo-principal.png" alt="Olavinho Boiadeiro Deputado Estadual" /><span>{candidate.role} - {candidate.number}</span><span>{candidate.party}</span></div>
         <div><span>Eleicao 2026 - CNPJ: {candidate.campaignCnpj}</span><span>Responsavel: {candidate.legalResponsible}</span><span>{candidate.address}</span></div>
         <div><span>{candidate.domain}</span><span>{candidate.email}</span><span>{candidate.instagram}</span></div>
         <div><span>Propaganda eleitoral - Eleicao 2026</span><span>Material oficial da campanha Olavinho Boiadeiro 10555</span><span>Republicanos - Acre</span></div>
