@@ -351,7 +351,7 @@ const audienceProposals = [
     title: 'Mulheres',
     icon: <Users size={26} />,
     image: '/images/olavinho-official-speaking.png',
-    points: ['Saude, protecao e autonomia economica', 'Apoio a maes, produtoras e empreendedoras', 'Politica publica perto da rotina real da mulher'],
+    points: ['Saude, protecao e autonomia economica', 'Apoio a maes, produtoras e empreendedoras', 'Apoio as maes atipicas, com atencao a familias de criancas autistas', 'Politica publica perto da rotina real da mulher'],
   },
   {
     title: 'Municipios',
@@ -381,7 +381,7 @@ const editableDefaults = {
   heroTitleTop: 'Acre que produz.',
   heroTitleBottom: 'Interior que funciona.',
   heroLead: 'Olavinho conhece o Acre de quem trabalha cedo, enfrenta ramal, produz, empreende e cobra resultado. Uma campanha para defender o interior com experiencia, coragem e palavra.',
-  whatsappGroupUrl: '',
+  whatsappGroupUrl: 'https://chat.whatsapp.com/FcjDMpaYbam7Acv8meG20S?s=sh&p=a&ilr=1',
   storyEyebrow: 'Antes da politica, ja existia trabalho',
   storyTitle: 'Uma historia construida trabalhando.',
   storyText: 'Antes da campanha, houve uma vida ligada ao campo, ao trabalho e a Acrelandia. Essa historia ajuda a explicar por que Olavinho fala de ramal, producao, saude e municipio forte sem precisar decorar discurso.',
@@ -695,6 +695,7 @@ function App() {
               <div className="hero-actions">
                 <a className="button primary" href="#historia">Conheca a trajetoria <ArrowRight size={18} /></a>
                 <a className="button secondary" href="#plano">Ver plano 10555</a>
+                <a className="button whatsapp-direct" href={whatsappContactUrl}>WhatsApp 68 99257-5745</a>
               </div>
             </div>
             <div className="hero-visual" aria-label="Painel visual da campanha">
@@ -1049,7 +1050,7 @@ function App() {
         <button type="button" onClick={shareCampaign} aria-label="Compartilhar site da campanha">
           <Share2 size={18} /> {shareStatus || 'Compartilhar'}
         </button>
-        <a className="whatsapp-float" href={whatsappGroupUrl} aria-label="Entrar no grupo do WhatsApp">Grupo WhatsApp</a>
+        <a className="whatsapp-float" href={whatsappContactUrl} aria-label="Chamar a campanha no WhatsApp">WhatsApp direto</a>
       </div>
 
       <footer className="site-footer" aria-label="Informacoes legais da campanha">

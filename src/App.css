@@ -240,6 +240,17 @@ textarea {
   transform: translateY(-2px);
 }
 
+.button.whatsapp-direct {
+  color: white;
+  background: linear-gradient(135deg, var(--green), #0aa35d);
+  box-shadow: 0 18px 44px rgba(10, 193, 95, 0.22);
+}
+
+.button.whatsapp-direct:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 54px rgba(10, 193, 95, 0.28);
+}
+
 .menu-button,
 .menu-close {
   display: none;
@@ -3004,5 +3015,130 @@ main {
 
   .hero-focus-strip {
     border-radius: 8px;
+  }
+}
+
+@media (min-width: 1081px) and (max-width: 1440px) {
+  .hero {
+    min-height: 100vh;
+    padding-top: 6.7rem;
+    padding-bottom: 1rem;
+  }
+
+  .hero-grid {
+    grid-template-columns: minmax(0, 0.95fr) minmax(390px, 0.72fr);
+    gap: clamp(1.4rem, 3vw, 3.4rem);
+    min-height: calc(100vh - 12rem);
+  }
+
+  .hero-copy {
+    max-width: 640px;
+  }
+
+  .hero h1 {
+    max-width: 650px;
+    font-size: clamp(4.1rem, 6.2vw, 5.2rem);
+  }
+
+  .hero-lead {
+    max-width: 590px;
+    font-size: 1.08rem;
+  }
+
+  .hero-visual {
+    min-height: 610px;
+    margin-top: 0;
+  }
+
+  .portrait-frame {
+    left: auto;
+    right: 0;
+    width: min(480px, 37vw);
+    height: 610px;
+    --portrait-x: 0;
+  }
+
+  .portrait-badge {
+    right: 0;
+    bottom: 1.1rem;
+    width: min(235px, 48%);
+    --badge-x: 0;
+  }
+
+  .hero-focus-strip {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .hero-focus-strip div {
+    min-height: 66px;
+    padding: 0.75rem 0.8rem;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 0;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 720px) {
+  .hero {
+    padding-top: 6.1rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.35rem, 11.8vw, 3.3rem);
+  }
+
+  .hero-lead {
+    margin-top: 0.8rem;
+    font-size: 0.98rem;
+    line-height: 1.48;
+  }
+
+  .campaign-signature {
+    margin-top: 1rem;
+    padding: 0.65rem 0.75rem;
+  }
+
+  .campaign-signature strong {
+    font-size: clamp(1.75rem, 9vw, 2.45rem);
+  }
+
+  .campaign-signature span {
+    font-size: 0.8rem;
+  }
+
+  .hero-actions {
+    gap: 0.65rem;
+    margin-top: 1rem;
+  }
+
+  .hero-actions .button {
+    min-height: 48px;
+    padding: 0.75rem 0.95rem;
+  }
+
+  .hero-visual {
+    min-height: 455px;
+    margin-top: 0.9rem;
+  }
+
+  .portrait-frame {
+    width: min(100%, 370px);
+    height: 455px;
+    bottom: 0;
+  }
+
+  .floating-actions {
+    position: static;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 0 1rem 1rem;
+    background: var(--navy-980);
+  }
+
+  .floating-actions button,
+  .whatsapp-float {
+    justify-content: center;
+    min-height: 48px;
+    padding: 0.75rem 0.8rem;
   }
 }

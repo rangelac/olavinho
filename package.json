@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "audit:responsive": "node scripts/responsive-audit.mjs",
     "optimize:images": "node scripts/optimize-images.mjs",
     "preview": "vite preview"
   },
@@ -28,6 +29,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.4.0",
+    "playwright-core": "^1.62.1",
     "sharp": "^0.35.4",
     "vite": "^8.0.0"
   }
