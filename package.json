@@ -29,7 +29,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.4.0",
     "playwright-core": "^1.62.1",
-    "sharp": "^0.35.4",
-    "vite": "^8.0.0"
+    "sharp": "^0.35.5",
+    "vite": "^8.2.4"
   }
 }
